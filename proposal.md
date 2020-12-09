@@ -16,7 +16,7 @@ Some more details about the backend implementation:
 The goal of this project would be to break the "Monolith" and create a Mircoservice for each of the two backend services.  \
 These two microservices should then be running inside a docker container and should be managed via kubernetes. For kubernetes Microsoft Azure or kind will be used.
 
-Instead of kubernetes a Jenkins build server could be used to support Continous Integration. Therfore, the backend would have to be split up into two seperate repositories (At least we think this should be the case).
+Instead of kubernetes a Jenkins build server could be used to support Continous Integration. Therfore, the backend would have to be split up into two seperate repositories (At least we think this should be the case). Maybe we have to do this anyways.
 
 The ultimate goal would be that the already existing Frontend is able to get the data from these Microservices. 
 
