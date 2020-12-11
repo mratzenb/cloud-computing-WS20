@@ -14,12 +14,10 @@ Some more details about the backend implementation:
 
 ## What should be done
 The goal of this project would be to break the "Monolith" and create a Mircoservice for each of the two backend services.  \
-These two microservices should then be running inside a docker container and should be managed via kubernetes. For kubernetes Microsoft Azure or kind will be used.
+These two microservices should then be running inside a docker container. ~~and should be managed via kubernetes. For kubernetes Microsoft Azure or kind will be used.~~ \ 
+For the application we think it is best to be running locally. Hence, kubernetes will not be needed.
 
-Instead of kubernetes a Jenkins build server could be used to support Continous Integration. Therfore, the backend would have to be split up into two seperate repositories (At least we think this should be the case). Maybe we have to do this anyways.
+~~Instead of kubernetes a Jenkins build server could be used to support Continous Integration.~~ To support continous integration we use eiter Github CI to build the microservices or Jenkins. Therfore, the backend would have to be split up into two seperate repositories to make them build individually.
 
 The ultimate goal would be that the already existing Frontend is able to get the data from these Microservices. 
-
-## Open questions
-* Shall the frontend directly call Microsoft Azure or is it better to provide a backend endpoint which then calls the Microserivce. If the latter is used the frontend still calls the backend via localhost (which it does currently) and the backend then calls the Microservice instead of performing the task on its own.
 
