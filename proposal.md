@@ -22,3 +22,4 @@ The ultimate goal would be that the already existing Frontend is able to get the
 
 ## Open questions
 * Shall the frontend directly call Microsoft Azure or is it better to provide a backend endpoint which then calls the Microserivce. If the latter is used the frontend still calls the backend via localhost (which it does currently) and the backend then calls the Microservice instead of performing the task on its own.
+
