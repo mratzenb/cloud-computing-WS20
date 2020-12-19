@@ -27,5 +27,5 @@ The ultimate goal would be that the already existing Frontend is able to get the
 | Member  | Responsibility                                                                         |
 | ------- | -------------------------------------------------------------------------------------- |
 | Michael | <ul><li>Splitting the Monolith<li>Generate Dockerfiles<li>Generate Github Actions</ul> |
-| Nikola  | <ul><li>Generate Github Actions <li>Local _Kind_ deployment</ul>                                              |
+| Nikola  | <ul><li>Generate Github Actions <li>Local _Kind_ deployment</ul>                       |
 

@@ -1,0 +1,20 @@
+version: "3"
+services:
+    client:
+        image: frontend-service:latest
+        depends_on:
+            - weather-service
+            - traffic-service
+        ports: 
+            - 4200:80
+
+    weather-service:
+        image: weather-service:latest
+        ports:
+            - 8081:8080
+        
+    traffic-service:
+        image: traffic-service:latest
+        ports:
+            - 8080:8080
+
