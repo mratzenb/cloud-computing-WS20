@@ -1,0 +1,32 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: traffic-service
+spec:
+  selector:
+    matchLabels:
+      app: traffic-service
+  replicas: 1 
+  template:
+    metadata:
+      labels:
+        app: traffic-service
+    spec:
+      containers:
+      - name: traffic-service
+        image: traffic-service
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: traffic-service
+spec:
+  selector:
+    app: traffic-service
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: LoadBalancer
