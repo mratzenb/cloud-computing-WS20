@@ -78,7 +78,7 @@ jobs:
       run: mvn -B package --file pom.xml
 ```
 
-For the frontend-service the script has to be modified. Instead of _Maven_, _npm_ is used for building. The script can be seen below.
+For the frontend-service the script has to be modified. The complete files can be found for the [traffic-service](https://github.com/mratzenb/traffic-service/blob/main/.github/workflows/maven.yml) and for the [weather-service](https://github.com/mratzenb/weather-service/blob/main/.github/workflows/maven.yml). Instead of _Maven_, _npm_ is used for building. The script can be seen below.
 
 ```yaml
 name: CI
@@ -107,8 +107,53 @@ jobs:
 
 ```
 
-For our build it is important to use a specific node version. 
+For our build it is important to use a specific node version. The file can be seen [here](https://github.com/mratzenb/frontend-service/blob/main/.github/workflows/main.yml).
 
 ### Continuous Deployment / Delivery
 
 ## Introducing Kubernetes with Minikube 
+
+Weather-service and traffic-service, should be run in a minikube.
+Installation guide for minikube: https://v1-18.docs.kubernetes.io/docs/tasks/tools/install-minikube
+
+First of all we need the .yaml files for both services we want to run there:
+[traffic-service](../traffic-service.yml)
+[weather-service](../weather-service.yml)
+
+The important part here is:
+
+```yaml
+      containers:
+            - name: traffic-service
+              image: mratzenb/smart-mirror:traffic-service
+              ports:
+              - containerPort: 8080
+            imagePullSecrets:
+              - name: regcred
+```
+
+Here we need to specify what image to use. We use the one on out docker-hub with the container port 8080. The last part is important so we actually have access to the repository.
+We can find the config.json under C:\Users\<User>\.docker and there we need to execute the following command to get our token:
+
+```bash
+    kubectl create secret docker-registry regcred --docker-server=https://index.docker.io/v1/ --docker-username=<your-name> --docker-password=<your-pword>
+```
+
+Once done you can check the outcome with:
+
+```bash
+    kubectl get secret regcred --output=yaml
+```
+
+Once the pods are up and running, the last thing to do is to run the frontend-service:
+
+```bash
+    docker run -p 4200:80 mratzenb/smart-mirror:frontend-service
+```
+
+And to configure the port forwarding for the weather- and traffic-service:
+
+```bash
+    kubectl port-forward service/weather-service 8081:8080
+    kubectl port-forward service/traffic-service 8080:8080
+```
