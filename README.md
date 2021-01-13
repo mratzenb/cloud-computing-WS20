@@ -37,4 +37,78 @@ The backend is a Spring Boot application that currently consists of two _Spring 
 
 ## Microservices to the rescue
 
+From the architecture above the monolith ([can be found here](https://github.com/mratzenb/smart-mirror-cloud-computing)) gets split up into three microservices:
+
+1) _frontend-service_ which is essentially the Angular application ([frontend-service](https://github.com/mratzenb/frontend-service)).
+2) _traffic-service_ which is responsible for scraping and providing the traffic data from ö3 ([traffic-service](https://github.com/mratzenb/traffic-service)).
+3) _weather-service_ which is responsible for providing the weather data from openweathermap ([weather-service](https://github.com/mratzenb/weather-service)).
+
+For this the code base got split up into three separate repositories. The improved architecture looks something like this:
+![Microservices - Architecture](./documentation/figs/Microservice-architecture.svg)
+
+As it can be seen the functionalities are now split up into three independent microservices where each microservice runs in its own Docker-container.
+
+**Note:** both backend services should get managed by Kubernetes.
+
+### Continuous Integration
+
+To support continuous integration Github-Actions are used. Every time a commit is pushed to the _main_ branch the entire project gets build and the tests are run.
+Below is the build script that performs a maven build on JDK14 and also includes running the tests.
+
+```yaml
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 14
+      uses: actions/setup-java@v1
+      with:
+        java-version: 14
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+```
+
+For the frontend-service the script has to be modified. Instead of _Maven_, _npm_ is used for building. The script can be seen below.
+
+```yaml
+name: CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Node $
+        uses: actions/setup-node@v2
+        with:
+          node-version: '10'
+          
+      - name: npm install and npm run build
+        run: |
+          npm ci
+          npm run build
+
+```
+
+For our build it is important to use a specific node version. 
+
+### Continuous Deployment / Delivery
+
 ## Introducing Kubernetes with Minikube 
