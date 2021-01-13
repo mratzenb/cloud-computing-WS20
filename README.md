@@ -111,7 +111,7 @@ For our build it is important to use a specific node version. The file can be se
 
 ### Continuous Deployment / Delivery
 
-## Introducing Kubernetes with Minikube 
+## Introducing Kubernetes with Minikube
 
 Weather-service and traffic-service, should be run in a minikube.
 Installation guide for minikube: https://v1-18.docs.kubernetes.io/docs/tasks/tools/install-minikube
@@ -157,3 +157,15 @@ And to configure the port forwarding for the weather- and traffic-service:
     kubectl port-forward service/weather-service 8081:8080
     kubectl port-forward service/traffic-service 8080:8080
 ```
+
+### Workaround
+
+Since the weather-service contains a sensitive API-key we do not want to publish the Docker-images to a public Dockerhub repository. Since Dockerhub only allows one private repository for the free account we abuse the tagging system.
+
+Instead of _traffic-service:major.minor_ we use the version to indicate the actual service. All services have the same name (_smart-mirror_) but their version number indicates the actual service. The images on Dockerhub are:
+
+* mratzenb/smart-mirror:frontend-service
+* mratzenb/smart-mirror:traffic-service
+* mratzenb/smart-mirror:weather-service
+
+We know, that this is not the intended way but we want to keep the API keys private.
