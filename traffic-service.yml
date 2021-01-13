@@ -14,9 +14,11 @@ spec:
     spec:
       containers:
       - name: traffic-service
-        image: traffic-service
+        image: mratzenb/smart-mirror:traffic-service
         ports:
         - containerPort: 8080
+      imagePullSecrets:
+        - name: regcred
 ---
 apiVersion: v1
 kind: Service

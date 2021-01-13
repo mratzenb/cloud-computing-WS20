@@ -14,9 +14,11 @@ spec:
     spec:
       containers:
       - name: weather-service
-        image: weather-service
+        image: mratzenb/smart-mirror:weather-service
         ports:
         - containerPort: 8080
+      imagePullSecrets:
+        - name: regcred
 ---
 apiVersion: v1
 kind: Service
