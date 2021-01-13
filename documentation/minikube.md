@@ -29,3 +29,8 @@ Once done you can check the outcome with:
 Once the pods are up and running, the last thing to do is to run the frontend-service:
 
       docker run -p 4200:80 mratzenb/smart-mirror:frontend-service
+
+And to configure the port forwarding for the weather- and traffic-service:
+      
+      kubectl port-forward service/weather-service 8081:8080
+      kubectl port-forward service/traffic-service 8080:8080
