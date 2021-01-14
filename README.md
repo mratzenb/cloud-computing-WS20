@@ -56,18 +56,15 @@ To support continuous integration Github-Actions are used. Every time a commit i
 Below is the build script that performs a maven build on JDK14 and also includes running the tests.
 
 ```yaml
-name: Java CI with Maven
+name: Java CI with Maven and CD to Dockerhub
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
     branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 14
@@ -78,18 +75,15 @@ jobs:
       run: mvn -B package --file pom.xml
 ```
 
-For the frontend-service the script has to be modified. The complete files can be found for the [traffic-service](https://github.com/mratzenb/traffic-service/blob/main/.github/workflows/maven.yml) and for the [weather-service](https://github.com/mratzenb/weather-service/blob/main/.github/workflows/maven.yml). Instead of _Maven_, _npm_ is used for building. The script can be seen below.
+For the frontend-service the script has to be modified. The complete files can be found for the [traffic-service](https://github.com/mratzenb/traffic-service/blob/main/.github/workflows/main-branch.yml) and for the [weather-service](https://github.com/mratzenb/weather-service/blob/main/.github/workflows/main-branch.yml). Instead of _Maven_, _npm_ is used for building. The script can be seen below.
 
 ```yaml
-name: CI
+name: NPM CI with CD to Dockerhub
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -99,17 +93,87 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '10'
-          
       - name: npm install and npm run build
         run: |
           npm ci
           npm run build
-
 ```
 
-For our build it is important to use a specific node version. The file can be seen [here](https://github.com/mratzenb/frontend-service/blob/main/.github/workflows/main.yml).
+For our build it is important to use a specific node version. The file can be seen [here](https://github.com/mratzenb/frontend-service/blob/main/.github/workflows/main-branch.yml).
 
-### Continuous Deployment / Delivery
+Furthermore, the build step gets executed on each push to the repository. This means that every time a push happens to any branch (except for main) the branch gets built. The files can be found here:
+* [frontend-service-branch](https://github.com/mratzenb/frontend-service/blob/main/.github/workflows/branch.yml)
+* [traffic-service-branch](https://github.com/mratzenb/traffic-service/blob/main/.github/workflows/branch.yml)
+* [weather-service-branch](https://github.com/mratzenb/weather-service/blob/main/.github/workflows/branch.yml)
+
+The important part is the following:
+
+```yaml
+on:
+  push:
+    branches-ignore:
+      - 'main'
+      - main
+```
+
+This ensures that this action is only executed on a push to a branch that is not equal to main.
+
+### Continuous Delivery
+
+The important part of the yaml file is:
+
+```yaml
+  publish:
+      needs: build
+      runs-on: ubuntu-latest
+      steps:
+        -
+          name: Set up QEMU
+          uses: docker/setup-qemu-action@v1
+        -
+          name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v1
+        -
+          name: Login to DockerHub
+          uses: docker/login-action@v1 
+          with:
+            username: ${{ secrets.DOCKERHUB_USERNAME }}
+            password: ${{ secrets.DOCKERHUB_TOKEN }}
+        -
+          name: Build and push
+          id: docker_build
+          uses: docker/build-push-action@v2
+          with:
+            push: true
+            tags: mratzenb/smart-mirror:frontend-service
+```
+
+The important step here is, that in order to access Dockerhub, user credentials are needed. For this an access token for dockerhub was created and added as credentials to the repositories.
+
+### Github Workflow
+
+The entire Github-Workflow looks something like this
+![Github-Workflow](./documentation/figs/github-environment.svg)
+
+As it can be seen each created repository now has two Github-Actions which do basically all the same.
+
+First, the entire project gets built. Hence, this is named the **build** Action. This means the two backend services (traffic and weather) perform a _maven package_ which also runs the tests. The frontend service performs a _npm build_ which performs a full build on the Angular project. Currently, there are no tests for the frontend which could be run...
+
+Second, after a successful build, a docker image, which contains the runnable version of each micro-service, gets created and is then published to Dockerhub. This action is called **publish**.
+
+When pushing to a branch different to _main_ only the build action is triggered. This also means that when submitting a pull request the build appears as check which means there cannot be a merge if the build or tests fail.
+
+### Dockerhub Workaround
+
+Since the weather-service contains a sensitive API-key we do not want to publish the Docker-images to a public Dockerhub repository. Since Dockerhub only allows one private repository for the free account we abuse the tagging system.
+
+Instead of _traffic-service:major.minor_ we use the version to indicate the actual service. All services have the same name (_smart-mirror_) but their version number indicates the actual service. The images on Dockerhub are:
+
+* mratzenb/smart-mirror:frontend-service
+* mratzenb/smart-mirror:traffic-service
+* mratzenb/smart-mirror:weather-service
+
+We know, that this is not the intended way but we want to keep the API keys private.
 
 ## Introducing Kubernetes with Minikube
 
@@ -117,8 +181,8 @@ Weather-service and traffic-service, should be run in a minikube.
 Installation guide for minikube: https://v1-18.docs.kubernetes.io/docs/tasks/tools/install-minikube
 
 First of all we need the .yaml files for both services we want to run there:
-[traffic-service](../traffic-service.yml)
-[weather-service](../weather-service.yml)
+[traffic-service](./traffic-service.yml)
+[weather-service](./weather-service.yml)
 
 The important part here is:
 
@@ -157,15 +221,3 @@ And to configure the port forwarding for the weather- and traffic-service:
     kubectl port-forward service/weather-service 8081:8080
     kubectl port-forward service/traffic-service 8080:8080
 ```
-
-### Workaround
-
-Since the weather-service contains a sensitive API-key we do not want to publish the Docker-images to a public Dockerhub repository. Since Dockerhub only allows one private repository for the free account we abuse the tagging system.
-
-Instead of _traffic-service:major.minor_ we use the version to indicate the actual service. All services have the same name (_smart-mirror_) but their version number indicates the actual service. The images on Dockerhub are:
-
-* mratzenb/smart-mirror:frontend-service
-* mratzenb/smart-mirror:traffic-service
-* mratzenb/smart-mirror:weather-service
-
-We know, that this is not the intended way but we want to keep the API keys private.
