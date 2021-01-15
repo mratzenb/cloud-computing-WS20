@@ -186,7 +186,7 @@ This ensures that this action is only executed on a push to a branch that is not
 
 Since we do not want that anyone is able to merge on the main branch without having the code approved the main branch has to be protected. This is done by only allowing pull-requests. Furthermore, a merge of a pull-request should only be possible if the feature-build step was successful. The settings can be found here:
 
-**TODO**
+![branch-protection-settings](documentation/figs/branch-protection.png)
 
 ### Continuous Delivery
 
@@ -293,4 +293,5 @@ And to configure the port forwarding for the weather- and traffic-service:
 ```
 
 ### Scaling
-**TODO**
+
+If we have to scale the backend-services we would increase the replica and we would also use a load-balancer.
