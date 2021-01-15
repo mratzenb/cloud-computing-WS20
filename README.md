@@ -35,6 +35,8 @@ The frontend currently contains two components. First, there is the _Traffic Com
 
 The backend is a Spring Boot application that currently consists of two _Spring RestControllers_. First, there is the _TrafficController_ which listens for incoming HTTP GET requests on _/traffic_. Second, there is the _WeatherController_ which listens for incoming HTTP GET requests on _/weather_ and _/weatherForecast_. Both of these Controllers use a _Spring Service_ which actually gets the data. This means for example the _TrafficService_ queries data via HTTP from [oe3.orf.at](oe3.orf.at).
 
+In this approach the frontend part does not require anything special in order to run, since it gets built via npm build and afterwards deployed to the tomcat that is managed by Spring.
+
 ## Microservices to the rescue
 
 From the architecture above the monolith ([can be found here](https://github.com/mratzenb/smart-mirror-cloud-computing)) gets split up into three microservices:
@@ -49,6 +51,68 @@ For this the code base got split up into three separate repositories. The improv
 As it can be seen the functionalities are now split up into three independent microservices where each microservice runs in its own Docker-container.
 
 **Note:** both backend services should get managed by Kubernetes.
+
+### Docker Containers
+
+For the two backend services nothing really changes in terms of running them inside a docker container. The following snippet shows the Dockerfile for the weather-service which is basically identical to the traffic-service one except that the names differ.
+
+```docker
+FROM maven:3.6-adoptopenjdk-14 AS build
+
+COPY ./src/ /home/weather-service/src
+COPY ./pom.xml /home/weather-service/pom.xml
+
+RUN ls -a /home/weather-service
+RUN mvn -f /home/weather-service/pom.xml clean package
+
+#
+# Package stage
+#
+FROM adoptopenjdk:14-jdk-hotspot
+COPY --from=build /home/weather-service/target/*.jar /usr/local/lib/weather-service.jar
+EXPOSE 8080
+# Run with "--enable-preview" because the application uses preview features.
+ENTRYPOINT ["java", "--enable-preview","-jar","/usr/local/lib/weather-service.jar"]
+```
+
+For building maven is used as in the monolith.
+
+The frontend service needs more work because the angular application now has to run on a different web-server. For this _nginx_ is used but this also requires an additional config file which can be seen in the following code snippet.
+
+```json
+events{}
+http {
+    include /etc/nginx/mime.types;
+    server {
+        listen 80 ssl;
+        server_name localhost;
+        root /usr/share/nginx/html;
+        index index.html;
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+    }
+}
+```
+
+This essentially tells nginx to listen to port 80 and provide the generated index.html file. With this the Dockerfile for the frontend-service looks as follows:
+
+```Docker
+#### Build the app
+FROM node:10.23.0-alpine3.10 AS build
+WORKDIR /usr/src/app
+COPY package.json package-lock.json ./
+RUN npm install -g @angular/cli
+RUN npm install
+COPY . .
+RUN ng build --prod
+
+#### Run the app
+FROM nginx:1.19.6
+COPY nginx.conf /etc/nginx/nginx.con
+COPY --from=build /usr/src/app/dist/frontend-service /usr/share/nginx/html
+```
 
 ### Continuous Integration
 
@@ -117,6 +181,12 @@ on:
 ```
 
 This ensures that this action is only executed on a push to a branch that is not equal to main.
+
+#### Branch protection
+
+Since we do not want that anyone is able to merge on the main branch without having the code approved the main branch has to be protected. This is done by only allowing pull-requests. Furthermore, a merge of a pull-request should only be possible if the feature-build step was successful. The settings can be found here:
+
+**TODO**
 
 ### Continuous Delivery
 
@@ -221,3 +291,6 @@ And to configure the port forwarding for the weather- and traffic-service:
     kubectl port-forward service/weather-service 8081:8080
     kubectl port-forward service/traffic-service 8080:8080
 ```
+
+### Scaling
+**TODO**
