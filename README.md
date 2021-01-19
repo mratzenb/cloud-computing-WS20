@@ -251,8 +251,8 @@ Weather-service and traffic-service, should be run in a minikube.
 Installation guide for minikube: https://v1-18.docs.kubernetes.io/docs/tasks/tools/install-minikube
 
 First of all we need the .yaml files for both services we want to run there:
-[traffic-service](./traffic-service.yml)
-[weather-service](./weather-service.yml)
+[traffic-service.yml](./traffic-service.yml)
+[weather-service.yml](./weather-service.yml)
 
 The important part here is:
 
@@ -279,13 +279,14 @@ Once done you can check the outcome with:
     kubectl get secret regcred --output=yaml
 ```
 
-Once the pods are up and running, the last thing to do is to run the frontend-service:
+Once the pods are up and running, the last thing to do is to run the frontend-service (because it will not be managed by Kubernetes):
 
 ```bash
     docker run -p 4200:80 mratzenb/smart-mirror:frontend-service
 ```
 
 And to configure the port forwarding for the weather- and traffic-service:
+(This is needed because we run our Kurbernetes clusters locally on Minikube.)
 
 ```bash
     kubectl port-forward service/weather-service 8081:8080
