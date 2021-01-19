@@ -251,8 +251,8 @@ Weather-service and traffic-service, should be run in a minikube.
 Installation guide for minikube: https://v1-18.docs.kubernetes.io/docs/tasks/tools/install-minikube
 
 First of all we need the .yaml files for both services we want to run there:
-[traffic-service.yml](./traffic-service.yml)
-[weather-service.yml](./weather-service.yml)
+[traffic-service.yml](./K8/traffic-service.yml)
+[weather-service.yml](./K8/weather-service.yml)
 
 The important part here is:
 

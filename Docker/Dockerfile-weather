@@ -1,0 +1,19 @@
+#
+# Build stage
+#
+FROM maven:3.6-adoptopenjdk-14 AS build
+
+COPY ./src/ /home/weather-service/src
+COPY ./pom.xml /home/weather-service/pom.xml
+
+RUN ls -a /home/weather-service
+RUN mvn -f /home/weather-service/pom.xml clean package
+
+#
+# Package stage
+#
+FROM adoptopenjdk:14-jdk-hotspot
+COPY --from=build /home/weather-service/target/*.jar /usr/local/lib/weather-service.jar
+EXPOSE 8080
+# Run with "--enable-preview" because the application uses preview features.
+ENTRYPOINT ["java", "--enable-preview","-jar","/usr/local/lib/weather-service.jar"]
