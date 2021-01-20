@@ -21,7 +21,7 @@ The main idea of this project is to split up an already existing monolith into m
 
 These services should then be split up into _microservices_ and those microservices should be running inside Docker-containers. Moreover, both backend microservices should be managed by Kubernetes.
 
-By splitting the monolith up into microservices it is also easier to set up continuous integration and deployment. For this Github-Actions and Dockerhub should be used.
+By splitting the monolith up into microservices it is also easier to set up continuous integration and delivery. For this Github-Actions and Dockerhub should be used.
 
 ## The Monolith
 
