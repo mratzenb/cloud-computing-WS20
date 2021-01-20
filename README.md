@@ -294,4 +294,7 @@ And to configure the port forwarding for the weather- and traffic-service:
 
 ### Scaling
 
-If we have to scale the backend-services we would increase the replica and we would also use a load-balancer.
+If we have to scale the backend-services we would increase the replica and we would also use a load-balancer. But there is a better solution.
+
+In [autoscale_traffic-service](./autoscale_traffic-service.yml), we define a autoscaler, where we can define the min and
+max amount of replicas and the target CPU utilization.
